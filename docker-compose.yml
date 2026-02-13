@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password 
+      - POSTGRES_DB=postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - result-tier
+      - back-tier
+
+
+  result:
+    build: ./result
+    restart: always
+    ports:
+      - "5001:80"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    networks:
+      - result-tier
+    depends_on:
+      - db
+      #déclarer les ressources (=$Variable), network et service dit créer ressource
+networks:
+  result-tier:
+  back-tier:
+volumes:
+  db-data:
